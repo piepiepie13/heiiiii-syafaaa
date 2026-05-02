@@ -1,0 +1,421 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Will You Be My Date? 🐱</title>
+  <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;600;700;800;900&display=swap" rel="stylesheet"/>
+  <style>
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --pink:       #f472b6;
+      --pink-dark:  #db2777;
+      --pink-light: #fce7f3;
+      --pink-pale:  #fff0f8;
+      --pink-mid:   #fbcfe8;
+      --white:      #ffffff;
+      --text:       #831843;
+      --subtext:    #be185d;
+    }
+
+    html, body {
+      height: 100%;
+      font-family: 'Nunito', sans-serif;
+    }
+
+    body {
+      background: var(--pink-pale);
+      overflow: hidden;
+    }
+
+    /* ── floating cat decorations ── */
+    .floaties {
+      position: fixed; inset: 0;
+      pointer-events: none;
+      z-index: 0;
+    }
+    .floaty {
+      position: absolute;
+      font-size: 1.8rem;
+      opacity: 0.12;
+      animation: floatAround linear infinite;
+    }
+
+    @keyframes floatAround {
+      0%   { transform: translateY(0px) rotate(0deg); }
+      50%  { transform: translateY(-18px) rotate(8deg); }
+      100% { transform: translateY(0px) rotate(0deg); }
+    }
+
+    /* ── pages ── */
+    #app {
+      position: relative;
+      z-index: 1;
+      width: 100vw;
+      height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .page {
+      display: none;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 1.4rem;
+      text-align: center;
+      padding: 2.5rem 2rem;
+      width: min(420px, 92vw);
+      background: rgba(255,255,255,0.75);
+      backdrop-filter: blur(14px);
+      border: 1.5px solid #fbb6ce;
+      border-radius: 28px;
+      box-shadow: 0 8px 40px #f9a8d440;
+      animation: popIn 0.4s cubic-bezier(.34,1.56,.64,1) both;
+    }
+    .page.active { display: flex; }
+
+    @keyframes popIn {
+      from { opacity: 0; transform: scale(0.85); }
+      to   { opacity: 1; transform: scale(1); }
+    }
+
+    .emoji-big {
+      font-size: 5rem;
+      line-height: 1;
+      animation: wiggle 2.4s ease-in-out infinite;
+    }
+    @keyframes wiggle {
+      0%,100% { transform: rotate(-5deg); }
+      50%      { transform: rotate(5deg); }
+    }
+
+    h1 {
+      font-family: 'Nunito', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 900;
+      color: var(--text);
+      line-height: 1.2;
+    }
+    .subtitle {
+      font-size: 0.9rem;
+      font-weight: 600;
+      color: var(--subtext);
+      letter-spacing: 0.04em;
+      text-transform: lowercase;
+    }
+    .question {
+      font-size: 1.15rem;
+      font-weight: 700;
+      color: var(--subtext);
+    }
+    h2 {
+      font-family: 'Nunito', sans-serif;
+      font-weight: 800;
+      font-size: 1.45rem;
+      color: var(--text);
+    }
+    .dancing-cat {
+      font-size: 4rem;
+      display: inline-block;
+      animation: catDance 0.5s ease-in-out infinite alternate;
+    }
+    @keyframes catDance {
+      from { transform: rotate(-12deg) translateY(0px); }
+      to   { transform: rotate(12deg) translateY(-8px); }
+    }
+    p {
+      font-size: 0.95rem;
+      color: var(--subtext);
+      font-weight: 600;
+    }
+
+    /* ── buttons ── */
+    .btn {
+      padding: 0.75rem 2rem;
+      border-radius: 50px;
+      border: none;
+      font-family: 'Nunito', sans-serif;
+      font-size: 1rem;
+      font-weight: 800;
+      cursor: pointer;
+      transition: transform 0.15s, box-shadow 0.15s, background 0.15s;
+    }
+    .btn:active { transform: scale(0.94) !important; }
+
+    .btn-yes {
+      background: var(--pink);
+      color: white;
+      box-shadow: 0 4px 18px #f472b660;
+    }
+    .btn-yes:hover {
+      background: var(--pink-dark);
+      transform: scale(1.06);
+      box-shadow: 0 6px 24px #db277760;
+    }
+
+    .btn-no {
+      background: white;
+      color: var(--pink);
+      border: 2px solid var(--pink-mid);
+      position: fixed;   /* will be repositioned by JS */
+      z-index: 50;
+      transition: none;
+      white-space: nowrap;
+    }
+
+    .btn-soft {
+      background: white;
+      color: var(--pink);
+      border: 2px solid var(--pink-mid);
+    }
+    .btn-soft:hover {
+      background: var(--pink-pale);
+      transform: scale(1.04);
+    }
+
+    .btn-row {
+      display: flex;
+      gap: 1rem;
+      justify-content: center;
+      align-items: center;
+      flex-wrap: wrap;
+    }
+
+    /* ── phone card ── */
+    .phone-card {
+      background: var(--pink-light);
+      border: 1.5px solid #fbb6ce;
+      border-radius: 18px;
+      padding: 1.2rem 1.8rem;
+      font-size: 1.15rem;
+      font-weight: 800;
+      color: var(--text);
+      line-height: 1.7;
+    }
+    .phone-card span {
+      display: block;
+      font-size: 0.85rem;
+      font-weight: 600;
+      color: var(--subtext);
+      margin-top: 4px;
+    }
+
+    /* ── sad animation ── */
+    .sad-cat {
+      font-size: 5rem;
+      animation: sadBounce 0.5s ease-in-out 4;
+    }
+    @keyframes sadBounce {
+      0%,100%{ transform:translateY(0) rotate(0); }
+      25%    { transform:translateY(-10px) rotate(-8deg); }
+      75%    { transform:translateY(-10px) rotate(8deg); }
+    }
+
+    /* ── celebrate ── */
+    .celebrate {
+      font-size: 1.6rem;
+      letter-spacing: 6px;
+      animation: celebratePop 0.6s ease-in-out infinite alternate;
+    }
+    @keyframes celebratePop {
+      from { transform: scale(1); }
+      to   { transform: scale(1.12); }
+    }
+
+    /* ── paw divider ── */
+    .paws {
+      font-size: 0.9rem;
+      letter-spacing: 5px;
+      opacity: 0.45;
+    }
+
+    /* ── falling hearts canvas ── */
+    #heartCanvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+      z-index: 0;
+      display: none;
+    }
+  </style>
+</head>
+<body>
+
+<!-- background floaties -->
+<div class="floaties">
+  <div class="floaty" style="top:5%;left:7%;animation-duration:3.8s;animation-delay:0s">🐱</div>
+  <div class="floaty" style="top:12%;right:9%;animation-duration:4.2s;animation-delay:0.5s">🌸</div>
+  <div class="floaty" style="top:30%;left:2%;animation-duration:5s;animation-delay:1s">🐾</div>
+  <div class="floaty" style="top:55%;right:4%;animation-duration:3.5s;animation-delay:0.3s">💕</div>
+  <div class="floaty" style="bottom:20%;left:10%;animation-duration:4.5s;animation-delay:0.8s">🐱</div>
+  <div class="floaty" style="bottom:10%;right:12%;animation-duration:3.9s;animation-delay:1.2s">🌸</div>
+  <div class="floaty" style="top:70%;left:40%;animation-duration:4.8s;animation-delay:0.2s">🐾</div>
+  <div class="floaty" style="top:20%;left:45%;animation-duration:4s;animation-delay:0.7s">💗</div>
+</div>
+
+<canvas id="heartCanvas"></canvas>
+
+<div id="app">
+
+  <!-- PAGE 1 -->
+  <div class="page active" id="page1">
+    <div class="emoji-big">🐱</div>
+    <h1>Hey Syafa 💗</h1>
+    <p class="subtitle">rafie has a question...</p>
+    <p class="question">heii, will you be my date?</p>
+    <div class="btn-row" style="min-height:52px;">
+      <button class="btn btn-yes" onclick="goPage2()">Yes 🩷</button>
+      <button class="btn btn-no" id="btn-no">No</button>
+    </div>
+    <div class="paws">🐾 🌸 🐾</div>
+  </div>
+
+  <!-- PAGE 2 -->
+  <div class="page" id="page2">
+    <div style="font-size:0.1px;line-height:0"> </div>
+    <span class="dancing-cat">🐱</span>
+    <h2>i knew you would press yes 🩷</h2>
+    <div class="phone-card">
+      don't forget to call me at 2 yaa! 📞
+    </div>
+    <div class="paws">🌸 🐾 🌸</div>
+  </div>
+
+  <!-- PAGE 3 — YES -->
+  <div class="page" id="page3">
+    <div class="celebrate">🎉🎀🌸💗🎊</div>
+    <div class="emoji-big">🐱💖</div>
+    <h2>Yay!! Makasih ya~</h2>
+    <div class="phone-card">
+      📞 Telepon aku jam 2 ya!
+      <span>Ditunggu lho, jangan lupa! 🩷</span>
+    </div>
+    <div class="paws">🌸🐾💕🐾🌸</div>
+  </div>
+
+  <!-- PAGE 4 — NO -->
+  <div class="page" id="page4">
+    <div class="sad-cat">🐱💔</div>
+    <h2>Ngga mau..? 😢</h2>
+    <p>Oke deh... kucing ini nangis dulu ya...</p>
+    <div style="font-size:2rem">😿 😿 😿</div>
+    <p style="font-size:0.82rem">*suara isak tangis kucing pink*</p>
+    <button class="btn btn-yes" onclick="goPage1()">Aku mau kok 🥺</button>
+  </div>
+
+</div>
+
+<script>
+  /* ── page transitions ── */
+  function showPage(id) {
+    document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+    var el = document.getElementById(id);
+    el.classList.add('active');
+    // re-trigger animation
+    el.style.animation = 'none';
+    el.offsetHeight;
+    el.style.animation = '';
+  }
+  function goPage2() { showPage('page2'); startHearts(); }
+  function goPage3() { showPage('page3'); }
+  function goPage4() { showPage('page4'); }
+  function goPage1() { showPage('page1'); stopHearts(); positionNoBtn(); }
+
+  /* ── runaway NO button ── */
+  var btnNo = document.getElementById('btn-no');
+  var noVisible = true;
+
+  function positionNoBtn() {
+    // initially place it next to yes button
+    var yes = document.querySelector('#page1 .btn-yes');
+    if (!yes) return;
+    var r = yes.getBoundingClientRect();
+    btnNo.style.left  = (r.right + 12) + 'px';
+    btnNo.style.top   = r.top + 'px';
+    btnNo.style.display = 'block';
+  }
+
+  function runAway() {
+    var margin = 10;
+    var bw = btnNo.offsetWidth  || 100;
+    var bh = btnNo.offsetHeight || 44;
+    var maxX = window.innerWidth  - bw - margin;
+    var maxY = window.innerHeight - bh - margin;
+    var newX = margin + Math.random() * maxX;
+    var newY = margin + Math.random() * maxY;
+    btnNo.style.left = newX + 'px';
+    btnNo.style.top  = newY + 'px';
+  }
+
+  btnNo.addEventListener('mouseenter', runAway);
+  btnNo.addEventListener('touchstart',  runAway, { passive: true });
+
+  // place on load
+  window.addEventListener('load', function() {
+    positionNoBtn();
+  });
+
+  /* ── falling hearts on page 3 ── */
+  var heartCanvas = document.getElementById('heartCanvas');
+  var ctx = heartCanvas.getContext('2d');
+  var hearts = [];
+  var rafId = null;
+
+  function startHearts() {
+    heartCanvas.style.display = 'block';
+    heartCanvas.width  = window.innerWidth;
+    heartCanvas.height = window.innerHeight;
+    hearts = [];
+    for (var i = 0; i < 28; i++) spawnHeart();
+    animateHearts();
+  }
+
+  function stopHearts() {
+    heartCanvas.style.display = 'none';
+    if (rafId) cancelAnimationFrame(rafId);
+    rafId = null;
+  }
+
+  function spawnHeart() {
+    hearts.push({
+      x: Math.random() * window.innerWidth,
+      y: -20 - Math.random() * 200,
+      size: 14 + Math.random() * 18,
+      speed: 1.2 + Math.random() * 1.6,
+      sway: (Math.random() - 0.5) * 0.8,
+      alpha: 0.55 + Math.random() * 0.4,
+      char: Math.random() > 0.5 ? '💗' : '🩷'
+    });
+  }
+
+  function animateHearts() {
+    ctx.clearRect(0, 0, heartCanvas.width, heartCanvas.height);
+    for (var i = hearts.length - 1; i >= 0; i--) {
+      var h = hearts[i];
+      h.y    += h.speed;
+      h.x    += h.sway;
+      h.alpha = Math.max(0, h.alpha - 0.002);
+      ctx.globalAlpha = h.alpha;
+      ctx.font = h.size + 'px serif';
+      ctx.fillText(h.char, h.x, h.y);
+      if (h.y > heartCanvas.height + 20) {
+        hearts.splice(i, 1);
+        spawnHeart();
+      }
+    }
+    ctx.globalAlpha = 1;
+    rafId = requestAnimationFrame(animateHearts);
+  }
+
+  window.addEventListener('resize', function() {
+    if (heartCanvas.style.display !== 'none') {
+      heartCanvas.width  = window.innerWidth;
+      heartCanvas.height = window.innerHeight;
+    }
+  });
+</script>
+</body>
+</html>
